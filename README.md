@@ -1,6 +1,6 @@
 # Differential_Expression-Aging_Brain_Tissue
-Using RNA-seq data (Where is this data from?), I am interested in measuring differential expression of genes (will find subset for this project) in brain tissues amongst aging individuals.
-
+Time is the grim-reaper to us all. As we age, our cells accumulate mutations, oxidative damage, and (other examples - general entropy) which  affects our cells to function properly, cascading to tissue and organ damage. Using RNA-seq data from the open source Genome-Tissue Expression project at the Broad Institute, we are interested in measuring differential expression of genes (will find subset for this project) in brain tissues amongst aging individuals.
+(This is just a start, will look over articles for more cohesive abstract)
 ## Getting Started
 
 These instructions will get you a copy of the project up and running on your local machine for development and testing purposes. See deployment for notes on how to deploy the project on a live system.
