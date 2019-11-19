@@ -3,7 +3,24 @@ Time is the grim-reaper to us all. As we age, our cells accumulate mutations, ox
 (This is just a start, will look over articles for more cohesive abstract)
 ## Getting Started
 
-These instructions will get you a copy of the project up and running on your local machine for development and testing purposes. See deployment for notes on how to deploy the project on a live system.
+- A de-identified, open access version of the sample annotations available in dbGaP. We use this file to extract the brain tissue types of individuals. (11M)
+```
+$ wget https://storage.googleapis.com/gtex_analysis_v8/annotations/GTEx_Analysis_v8_Annotations_SampleAttributesDS.txt
+```
+    - This file was further simplified by extracting the desired tissue types (all brain tissue and nerve tissue). The resulting file (ID_Brain_Nerve_Tissue.txt) is used in the main python code. 
+    ```
+    $ awk '/Brain/ || /Nerve/' GTEx_Analysis_v8_Annotations_SampleAttributesDS.txt | awk -F'\t' '{print $1, $7}' OFS='\t'  > ID_Brain_Nerve_Tissue.txt
+    ```
+
+- A de-identified, open access version of the subject phenotypes available in dbGaP. We use this file to extract the ages of individuals. (20K)
+```
+$ wget https://storage.googleapis.com/gtex_analysis_v8/annotations/GTEx_Analysis_v8_Annotations_SubjectPhenotypesDS.txt
+```
+
+- Gene TPMs. We use this file to extract the gene transcript per million (TPM) for an individual.
+```
+$ wget https://storage.googleapis.com/gtex_analysis_v8/rna_seq_data/GTEx_Analysis_2017-06-05_v8_RNASeQCv1.1.9_gene_tpm.gct.gz
+```
 
 ### Prerequisites
 

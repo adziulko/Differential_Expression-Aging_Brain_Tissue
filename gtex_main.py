@@ -7,6 +7,8 @@ import matplotlib.pylab as plt
 import argparse
 import box_viz
 import pandas as pd
+import itertools
+from itertools import islice
 
 
 
@@ -44,7 +46,7 @@ def main():
     parser.add_argument('--fnt', '-file_name_gene_tmp',
                         type=str,
                         help='RNA Seq gene tmp file (gziped)',
-                        required = False)
+                        required=True)
 
     parser.add_argument('--fnb', '-file_name_annotations',
                         type=str,
@@ -74,7 +76,7 @@ def main():
     args = parser.parse_args()
 
 
-#    tpm_file_name = args.fnt
+    tpm_file_name = args.fnt
     brain_tissue_file_name = args.fnb
     age_file_name = args.fna
 #    group_col_name = args.t
@@ -97,7 +99,8 @@ def main():
         brain_tissue_to_id_dict[tissue].append(Id)
     #print(brain_tissue_to_id_dict)
 
-    #Create age to id dict. result looks like....
+
+    #Create age to id dict. next(afn) skips header row. result looks like....
     # = {'20-29':[id1, id2, id3], '30-39':[id4, id5, id6]}
     age_to_id_dict = {}
     with open(age_file_name) as afn:
@@ -109,9 +112,54 @@ def main():
             if age not in age_to_id_dict:
                 age_to_id_dict[age] = []
             age_to_id_dict[age].append(Id)
-        #print(age_to_id_dict)
+    #print(age_to_id_dict)
 
 
+    #Create nested gene to Id to TPM dict. result looks like....
+    # = {'gene1': {'id1':TPM, 'id2':TPM, 'id3':TPM},
+    #    'gene2': {'id4':TPM, 'id5':TPM, 'id6':TPM}
+    gene_to_tpm_dict = {}
+    header = None
+    for line in open(tpm_file_name):
+        if header == None:
+            header = []
+            for field in line.rstrip().split('\t'):
+                header.append(field)
+        strip = line.rstrip().split('\t')
+        if strip[1] == 'Description':
+            continue
+        gene = strip[1]
+        gene_to_tpm_dict[gene] = {}
+        for i in range(2, len(strip)):
+            gene_to_tpm_dict[gene][header[i]] = float(strip[i])
+    #print(gene_to_tpm_dict['MIR6859-1'])
+    #print(header)
+    #for x in list(gene_to_tpm_dict)[0:1]:
+    #    print(gene_to_tpm_dict[x])
+        #print ("key {}, value {} ".format(x, gene_to_tpm_dict[x]))
+
+
+
+
+#####
+#pandas attempt at making dictionary
+#dd = defaultdict()
+#    table = pd.read_csv(tpm_file_name, sep='\t', header=None)
+#print(table.iloc[1, 2:])
+#    dd = table.to_dict('series')
+#    print(dd)
+#    id_gene_to_tpm_dict = {}
+#    for line in open(tpm_file_name):
+#        strip = line.rstrip().split('\t')
+#    Id = str(table.iloc[0, 2:])
+#    gene = table.iloc[1:, 1]
+#    tpm = table.iloc[1:, 2:]
+    #print(str(Id))
+#    if Id not in id_gene_to_tpm_dict:
+#        id_gene_to_tpm_dict[Id] = []
+#    id_gene_to_tpm_dict[Id].append(tpm)
+#    print(id_gene_to_tpm_dict)
+######
 
 ######
 #binary_serach
