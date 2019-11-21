@@ -152,8 +152,8 @@ def main():
 
     #The following code is in progress for matching up the values in two dictionaries
     #and subsequently adding the matched values to the 'hits' array
-    dict_a = {'cortex': ['B', 'D', 'F'], 'medulla': ['G', 'I', 'K'], 'frontal': ['L', 'N', 'O'], 'nerve': ['P', 'R', 'T']}
-    dict_b = {'20s': ['A', 'D', 'F'], '30s': ['A', 'A', 'A'], '40s': ['G', 'K', 'L'], '50s': ['O', 'Q', 'S']}
+    dict_a = {'cortex': ['B', 'G', 'O'], 'medulla': ['A', 'H', 'S'], 'frontal': ['D', 'N', 'Z'], 'nerve': ['C', 'L', 'R']}
+    dict_b = {'20s': ['E', 'H', 'R'], '30s': ['A', 'K', 'T'], '40s': ['B', 'N', 'S'], '50s': ['D', 'I', 'O']}
     #print(list(dict_a.values())[1])
     #print(len(dict_a))
     hit = []
