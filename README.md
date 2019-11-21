@@ -7,10 +7,10 @@ Time is the grim-reaper to us all. As we age, our cells accumulate mutations, ox
 ```
 $ wget https://storage.googleapis.com/gtex_analysis_v8/annotations/GTEx_Analysis_v8_Annotations_SampleAttributesDS.txt
 ```
-    - This file was further simplified by extracting the desired tissue types (all brain tissue and nerve tissue). The resulting file (ID_Brain_Nerve_Tissue.txt) is used in the main python code. 
-    ```
-    $ awk '/Brain/ || /Nerve/' GTEx_Analysis_v8_Annotations_SampleAttributesDS.txt | awk -F'\t' '{print $1, $7}' OFS='\t'  > ID_Brain_Nerve_Tissue.txt
-    ```
+- This file was further simplified by extracting the desired tissue types (all brain tissue and nerve tissue). The resulting file (ID_Brain_Nerve_Tissue.txt) is used in the main python code. 
+```
+$ awk '/Brain/ || /Nerve/' GTEx_Analysis_v8_Annotations_SampleAttributesDS.txt | awk -F'\t' '{print $1, $7}' OFS='\t'  > ID_Brain_Nerve_Tissue.txt
+```
 
 - A de-identified, open access version of the subject phenotypes available in dbGaP. We use this file to extract the ages of individuals. (20K)
 ```
