@@ -9,6 +9,7 @@ import box_viz
 import pandas as pd
 import itertools
 from itertools import islice
+import operator
 
 
 
@@ -89,36 +90,41 @@ def main():
 
     #Create brain tissue to id dict. result looks like....
     # = {'Cortex':[id1, id2, id3], 'Medulla':[id4, id5, id6]}
+    #I believe the original data was already sorted, so no need to sort
     brain_tissue_to_id_dict = {}
     for line in open(brain_tissue_file_name):
         strip = line.rstrip().split('\t')
         tissue = strip[1]
-        Id = strip[0]
+        sample_id = strip[0]
         if tissue not in brain_tissue_to_id_dict:
             brain_tissue_to_id_dict[tissue] = []
-        brain_tissue_to_id_dict[tissue].append(Id)
+        brain_tissue_to_id_dict[tissue].append(sample_id)
     #print(brain_tissue_to_id_dict)
+    #print("-----------------------")
+    #sorted_x = sorted(brain_tissue_to_id_dict.items(), key=operator.itemgetter(1))
+    #print(sorted_x)
 
 
     #Create age to id dict. next(afn) skips header row. result looks like....
     # = {'20-29':[id1, id2, id3], '30-39':[id4, id5, id6]}
+    #I believe the original data was already sorted, so no need to sort
     age_to_id_dict = {}
     with open(age_file_name) as afn:
         next(afn)
         for line in afn:
             strip = line.rstrip().split('\t')
             age = strip[2]
-            Id = strip[0]
+            sample_id = strip[0]
             if age not in age_to_id_dict:
                 age_to_id_dict[age] = []
-            age_to_id_dict[age].append(Id)
+            age_to_id_dict[age].append(sample_id)
     #print(age_to_id_dict)
 
 
-    #Create nested gene to Id to TPM dict. result looks like....
+    #Create nested gene to sample_id to TPM dict. result looks like....
     # = {'gene1': {'id1':TPM, 'id2':TPM, 'id3':TPM},
-    #    'gene2': {'id4':TPM, 'id5':TPM, 'id6':TPM}
-    gene_to_tpm_dict = {}
+    #    'gene2': {'id4':TPM, 'id5':TPM, 'id6':TPM}}
+    gene_to_id_tpm_dict = {}
     header = None
     for line in open(tpm_file_name):
         if header == None:
@@ -129,9 +135,9 @@ def main():
         if strip[1] == 'Description':
             continue
         gene = strip[1]
-        gene_to_tpm_dict[gene] = {}
+        gene_to_id_tpm_dict[gene] = {}
         for i in range(2, len(strip)):
-            gene_to_tpm_dict[gene][header[i]] = float(strip[i])
+            gene_to_id_tpm_dict[gene][header[i]] = float(strip[i])
     #print(gene_to_tpm_dict['MIR6859-1'])
     #print(header)
     #for x in list(gene_to_tpm_dict)[0:1]:
@@ -139,6 +145,70 @@ def main():
         #print ("key {}, value {} ".format(x, gene_to_tpm_dict[x]))
 
 
+
+
+
+
+
+    #The following code is in progress for matching up the values in two dictionaries
+    #and subsequently adding the matched values to the 'hits' array
+    dict_a = {'cortex': ['B', 'D', 'F'], 'medulla': ['G', 'I', 'K'], 'frontal': ['L', 'N', 'O'], 'nerve': ['P', 'R', 'T']}
+    dict_b = {'20s': ['A', 'D', 'F'], '30s': ['A', 'A', 'A'], '40s': ['G', 'K', 'L'], '50s': ['O', 'Q', 'S']}
+    #print(list(dict_a.values())[1])
+    #print(len(dict_a))
+    hit = []
+    #ney = (n for n in dict_a.values())
+    #nee = list.remove(dict_a.values())
+    #print(nee)
+    x = '\n'.join(map(str, dict_a.values()))
+    #print(x)
+    print('------')
+    xx = '\n'.join(map(str, x))
+    #print(xx)
+    print('------')
+    print(dict_a.values())
+    print('------')
+    xxx = [' '.join([str(c) for c in lst]) for lst in dict_a.values()]
+    print(xxx)
+
+
+
+    for tissue_ids in dict_a.values():
+        #tissue_ids = str(tissue_ids).strip('[]')
+        tissue_ids = '\n'.join(map(str, tissue_ids))
+        #print(tissue_ids)
+        for age_ids in dict_b.values():
+            age_ids = '\n'.join(map(str, age_ids))
+            #print(age_ids)
+            if tissue_ids == age_ids:
+                hit.append(tissue_ids)
+                next(iter(tissue_ids))
+                next(iter(age_ids))
+            elif tissue_ids < age_ids:
+                next(iter(tissue_ids))
+            elif tissue_ids > age_ids:
+                next(iter(age_ids))
+
+    print(hit)
+
+
+    dict_c = {'cortex': 'B', 'medulla': 'G', 'frontal': 'L', 'nerve': 'P'}
+    print(dict_c.values())
+
+
+#hit = []
+#for tissue_ids in dict_a.values():
+#    for age_ids in dict_b.values():
+#        if tissue_ids == age_ids:
+#            hit.append(tissue_ids)
+#            next(iter(tissue_ids))
+#            next(iter(age_ids))
+#        elif tissue_ids < age_ids:
+#            next(iter(tissue_ids))
+#        elif tissue_ids > age_ids:
+#            next(iter(age_ids))
+
+#print(hit)
 
 
 #####
@@ -151,13 +221,13 @@ def main():
 #    id_gene_to_tpm_dict = {}
 #    for line in open(tpm_file_name):
 #        strip = line.rstrip().split('\t')
-#    Id = str(table.iloc[0, 2:])
+#    sample_id = str(table.iloc[0, 2:])
 #    gene = table.iloc[1:, 1]
 #    tpm = table.iloc[1:, 2:]
-    #print(str(Id))
-#    if Id not in id_gene_to_tpm_dict:
-#        id_gene_to_tpm_dict[Id] = []
-#    id_gene_to_tpm_dict[Id].append(tpm)
+    #print(str(sample_id))
+#    if sample_id not in id_gene_to_tpm_dict:
+#        id_gene_to_tpm_dict[sample_id] = []
+#    id_gene_to_tpm_dict[sample_id].append(tpm)
 #    print(id_gene_to_tpm_dict)
 ######
 
