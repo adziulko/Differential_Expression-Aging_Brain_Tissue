@@ -13,31 +13,6 @@ import operator
 
 
 
-def linear_search(key, L):
-    for i  in range(len(L)):
-        curr =  L[i]
-        if key == curr:
-            return i
-    return -1
-
-
-def binary_search(key, D):
-    lo = -1
-    hi = len(D)
-    while (hi - lo > 1):
-        mid = (hi + lo) // 2
-
-        if key == D[mid][0]:
-            return D[mid][1]
-
-        if (key < D[mid][0]):
-            hi = mid
-        else:
-            lo = mid
-
-    return -1
-
-
 
 def main():
     parser = argparse.ArgumentParser(description=
@@ -89,9 +64,14 @@ def main():
 
 
     #Create brain tissue to id dict. result looks like....
-    # = {'Cortex':[id1, id2, id3], 'Medulla':[id4, id5, id6]}
+    ## = {'Cortex':[id1, id2, id3], 'Medulla':[id4, id5, id6]}
     #I believe the original data was already sorted, so no need to sort
+    #short_to_long_id_dict made to fix shortened ids in age file. This dict takes the first...
+    ##elements of the id and maps to list of lengthened id. Example...
+    ## = {'GTEX-1117F': ['GTEX-1117F-0011-R10a-SM-AHZ7F', 'GTEX-1117F-0011-R10b-SM-CYKQ8',
+    ##                                                          'GTEX-1117F-3226-SM-5N9CT']}
     brain_tissue_to_id_dict = {}
+    short_to_long_id_dict = {}
     for line in open(brain_tissue_file_name):
         strip = line.rstrip().split('\t')
         tissue = strip[1]
@@ -99,15 +79,18 @@ def main():
         if tissue not in brain_tissue_to_id_dict:
             brain_tissue_to_id_dict[tissue] = []
         brain_tissue_to_id_dict[tissue].append(sample_id)
-    #print(brain_tissue_to_id_dict)
-    #print("-----------------------")
-    #sorted_x = sorted(brain_tissue_to_id_dict.items(), key=operator.itemgetter(1))
-    #print(sorted_x)
+        short = '-'.join(sample_id.split('-')[:2])
+        if short not in short_to_long_id_dict:
+            short_to_long_id_dict[short] = []
+        short_to_long_id_dict[short].append(sample_id)
+    #print(short_to_long_id_dict)
+
 
 
     #Create age to id dict. next(afn) skips header row. result looks like....
     # = {'20-29':[id1, id2, id3], '30-39':[id4, id5, id6]}
     #I believe the original data was already sorted, so no need to sort
+    #The short_to_long_id_dict replaces the short id with the long id list made above
     age_to_id_dict = {}
     with open(age_file_name) as afn:
         next(afn)
@@ -117,14 +100,15 @@ def main():
             sample_id = strip[0]
             if age not in age_to_id_dict:
                 age_to_id_dict[age] = []
-            age_to_id_dict[age].append(sample_id)
+            if sample_id in short_to_long_id_dict:
+                age_to_id_dict[age] = age_to_id_dict[age] + short_to_long_id_dict[sample_id]
     #print(age_to_id_dict)
 
 
     #Create nested gene to sample_id to TPM dict. result looks like....
     # = {'gene1': {'id1':TPM, 'id2':TPM, 'id3':TPM},
     #    'gene2': {'id4':TPM, 'id5':TPM, 'id6':TPM}}
-    gene_to_id_tpm_dict = {}
+    gene_to_id_to_tpm_dict = {}
     header = None
     for line in open(tpm_file_name):
         if header == None:
@@ -135,9 +119,9 @@ def main():
         if strip[1] == 'Description':
             continue
         gene = strip[1]
-        gene_to_id_tpm_dict[gene] = {}
+        gene_to_id_to_tpm_dict[gene] = {}
         for i in range(2, len(strip)):
-            gene_to_id_tpm_dict[gene][header[i]] = float(strip[i])
+            gene_to_id_to_tpm_dict[gene][header[i]] = float(strip[i])
     #print(gene_to_tpm_dict['MIR6859-1'])
     #print(header)
     #for x in list(gene_to_tpm_dict)[0:1]:
@@ -145,70 +129,31 @@ def main():
         #print ("key {}, value {} ".format(x, gene_to_tpm_dict[x]))
 
 
+    #Create nested age to brain tissue to id dict. result looks like....
+    # = {'60-69': {'Brain - Frontal Cortex (BA9)': {'GTEX-13QIC-0011-R10a-SM-5O9C7',
+    # 'GTEX-1I1HK-0011-R10b-SM-CJI3M',...}, 'Brain - Cortex': {'GTEX-1HBPM-2926-SM-CL54E',
+    # 'GTEX-1I1GR-2926-SM-CNNQG',...}}, '30-39': {'Brain - Frontal Cortex (BA9)':
+    # {'GTEX-16YQH-0011-R10a-SM-AHZMD', ...}}}
+    age_to_brain_tissue_to_id_dict = {}
+    for age in age_to_id_dict:
+        if age not in age_to_brain_tissue_to_id_dict:
+            age_to_brain_tissue_to_id_dict[age] = {}
+        for tissue in brain_tissue_to_id_dict:
+            age_to_brain_tissue_to_id_dict[age][tissue] = set(age_to_id_dict[age]) & \
+                set(brain_tissue_to_id_dict[tissue])
+    #print(age_to_brain_tissue_to_id_dict)
 
 
 
 
 
-    #The following code is in progress for matching up the values in two dictionaries
-    #and subsequently adding the matched values to the 'hits' array
-    dict_a = {'cortex': ['B', 'G', 'O'], 'medulla': ['A', 'H', 'S'], 'frontal': ['D', 'N', 'Z'], 'nerve': ['C', 'L', 'R']}
-    dict_b = {'20s': ['E', 'H', 'R'], '30s': ['A', 'K', 'T'], '40s': ['B', 'N', 'S'], '50s': ['D', 'I', 'O']}
-    #print(list(dict_a.values())[1])
-    #print(len(dict_a))
-    hit = []
-    #ney = (n for n in dict_a.values())
-    #nee = list.remove(dict_a.values())
-    #print(nee)
-    x = '\n'.join(map(str, dict_a.values()))
-    #print(x)
-    print('------')
-    xx = '\n'.join(map(str, x))
-    #print(xx)
-    print('------')
-    print(dict_a.values())
-    print('------')
-    xxx = [' '.join([str(c) for c in lst]) for lst in dict_a.values()]
-    print(xxx)
 
 
 
-    for tissue_ids in dict_a.values():
-        #tissue_ids = str(tissue_ids).strip('[]')
-        tissue_ids = '\n'.join(map(str, tissue_ids))
-        #print(tissue_ids)
-        for age_ids in dict_b.values():
-            age_ids = '\n'.join(map(str, age_ids))
-            #print(age_ids)
-            if tissue_ids == age_ids:
-                hit.append(tissue_ids)
-                next(iter(tissue_ids))
-                next(iter(age_ids))
-            elif tissue_ids < age_ids:
-                next(iter(tissue_ids))
-            elif tissue_ids > age_ids:
-                next(iter(age_ids))
-
-    print(hit)
 
 
-    dict_c = {'cortex': 'B', 'medulla': 'G', 'frontal': 'L', 'nerve': 'P'}
-    print(dict_c.values())
 
 
-#hit = []
-#for tissue_ids in dict_a.values():
-#    for age_ids in dict_b.values():
-#        if tissue_ids == age_ids:
-#            hit.append(tissue_ids)
-#            next(iter(tissue_ids))
-#            next(iter(age_ids))
-#        elif tissue_ids < age_ids:
-#            next(iter(tissue_ids))
-#        elif tissue_ids > age_ids:
-#            next(iter(age_ids))
-
-#print(hit)
 
 
 #####
