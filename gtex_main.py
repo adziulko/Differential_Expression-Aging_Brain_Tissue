@@ -63,7 +63,8 @@ def main():
 
 
 
-    #Create brain tissue to id dict. result looks like....
+
+    #Create brain tissue to id dictionary. result looks like....
     ## = {'Cortex':[id1, id2, id3], 'Medulla':[id4, id5, id6]}
     #I believe the original data was already sorted, so no need to sort
     #short_to_long_id_dict made to fix shortened ids in age file. This dict takes the first...
@@ -87,7 +88,7 @@ def main():
 
 
 
-    #Create age to id dict. next(afn) skips header row. result looks like....
+    #Create age to id dictionary. next(afn) skips header row. result looks like....
     # = {'20-29':[id1, id2, id3], '30-39':[id4, id5, id6]}
     #I believe the original data was already sorted, so no need to sort
     #The short_to_long_id_dict replaces the short id with the long id list made above
@@ -105,7 +106,7 @@ def main():
     #print(age_to_id_dict)
 
 
-    #Create nested gene to sample_id to TPM dict. result looks like....
+    #Create nested gene to sample_id to TPM dictionary. result looks like....
     # = {'gene1': {'id1':TPM, 'id2':TPM, 'id3':TPM},
     #    'gene2': {'id4':TPM, 'id5':TPM, 'id6':TPM}}
     gene_to_id_to_tpm_dict = {}
@@ -129,7 +130,7 @@ def main():
         #print ("key {}, value {} ".format(x, gene_to_tpm_dict[x]))
 
 
-    #Create nested age to brain tissue to id dict. result looks like....
+    #Create nested age to brain tissue to id dictionry. result looks like....
     # = {'60-69': {'Brain - Frontal Cortex (BA9)': {'GTEX-13QIC-0011-R10a-SM-5O9C7',
     # 'GTEX-1I1HK-0011-R10b-SM-CJI3M',...}, 'Brain - Cortex': {'GTEX-1HBPM-2926-SM-CL54E',
     # 'GTEX-1I1GR-2926-SM-CNNQG',...}}, '30-39': {'Brain - Frontal Cortex (BA9)':
@@ -145,16 +146,38 @@ def main():
 
 
 
+#Mock age_to_brain_tissue_to_gene_to_tpm_dictionary:
+#{'60-69': {'Brain - Frontal Cortex (BA9)': {'gene1': [#1, #2, #3], 'Brain - Cortex':
+# 'GTEX-1I1HK-0011-R10b-SM-CJI3M',...},
+    age_to_brain_tissue_to_gene_to_tpm_dictionary = {}
+    for age in age_to_brain_tissue_to_id_dict:
+        if age not in age_to_brain_tissue_to_gene_to_tpm_dictionary:
+            age_to_brain_tissue_to_gene_to_tpm_dictionary[age] = {}
+        for tissue in age_to_brain_tissue_to_id_dict[age]:
+            if tissue not in age_to_brain_tissue_to_gene_to_tpm_dictionary:
+                age_to_brain_tissue_to_gene_to_tpm_dictionary[age][tissue] = {}
+            for gene in gene_to_id_to_tpm_dict:
+                if gene not in age_to_brain_tissue_to_gene_to_tpm_dictionary:
+                    age_to_brain_tissue_to_gene_to_tpm_dictionary[age][tissue][gene] = []
+
+
+    print(age_to_brain_tissue_to_gene_to_tpm_dictionary)
 
 
 
 
 
 
-
-
-
-
+#    age_to_brain_tissue_to_gene_to_tpm_dictionary = age_to_brain_tissue_to_id_dict
+#    for age in age_to_brain_tissue_to_gene_to_tpm_dictionary:
+#        for tissue in age_to_brain_tissue_to_gene_to_tpm_dictionary[age]:
+            #print(age_to_brain_tissue_to_gene_to_tpm_dictionary[age][tissue])
+#            for id2 in gene_to_id_to_tpm_dict[gene]:
+#                if id2 in age_to_brain_tissue_to_gene_to_tpm_dictionary[age][tissue]:
+#                    age_to_brain_tissue_to_gene_to_tpm_dictionary[age][tissue] = \
+#                    dict(age_to_brain_tissue_to_gene_to_tpm_dictionary[age][tissue]) + \
+#                    gene_to_id_to_tpm_dict
+    #print(age_to_brain_tissue_to_gene_to_tpm_dictionary)
 
 #####
 #pandas attempt at making dictionary
