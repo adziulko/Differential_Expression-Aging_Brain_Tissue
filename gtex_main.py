@@ -99,9 +99,11 @@ def main():
             strip = line.rstrip().split('\t')
             age = strip[2]
             sample_id = strip[0]
+            #print(sample_id)
             if age not in age_to_id_dict:
                 age_to_id_dict[age] = []
             if sample_id in short_to_long_id_dict:
+                #print(sample_id)
                 age_to_id_dict[age] = age_to_id_dict[age] + short_to_long_id_dict[sample_id]
     #print(age_to_id_dict)
 
@@ -146,10 +148,11 @@ def main():
 
 
 
-#Mock age_to_brain_tissue_to_gene_to_tpm_dictionary:
-#{'60-69': {'Brain - Frontal Cortex (BA9)': {'gene1': [#1, #2, #3], 'Brain - Cortex':
-# 'GTEX-1I1HK-0011-R10b-SM-CJI3M',...},
+#age_to_brain_tissue_to_gene_to_tpm_dictionary:
+#{'60-69': {'Brain - Frontal Cortex (BA9)': {'gene1': [#1, #2, #3]}, 'Brain - Cortex':
+
     age_to_brain_tissue_to_gene_to_tpm_dictionary = {}
+
     for age in age_to_brain_tissue_to_id_dict:
         if age not in age_to_brain_tissue_to_gene_to_tpm_dictionary:
             age_to_brain_tissue_to_gene_to_tpm_dictionary[age] = {}
@@ -161,7 +164,35 @@ def main():
                     age_to_brain_tissue_to_gene_to_tpm_dictionary[age][tissue][gene] = []
 
 
+    for gene in gene_to_id_to_tpm_dict:
+        for age in age_to_brain_tissue_to_id_dict:
+            for tissue in age_to_brain_tissue_to_id_dict[age]:
+                for sample_id in age_to_brain_tissue_to_id_dict[age][tissue]:
+                    if sample_id in gene_to_id_to_tpm_dict[gene]:
+                        age_to_brain_tissue_to_gene_to_tpm_dictionary[age][tissue][gene] = \
+                        age_to_brain_tissue_to_gene_to_tpm_dictionary[age][tissue][gene] + \
+                        gene_to_id_to_tpm_dict[gene][sample_id]
     print(age_to_brain_tissue_to_gene_to_tpm_dictionary)
+
+
+
+
+
+            #for gene in gene_to_id_to_tpm_dict:
+            #    if gene not in age_to_brain_tissue_to_gene_to_tpm_dictionary:
+            #        age_to_brain_tissue_to_gene_to_tpm_dictionary[age][tissue][gene] = []
+            #for sample_id in age_to_brain_tissue_to_id_dict[age][tissue]:
+            #    if sample_id in gene_to_id_to_tpm_dict[gene]:
+            #        age_to_brain_tissue_to_gene_to_tpm_dictionary[age][tissue][gene] = \
+            #        age_to_brain_tissue_to_gene_to_tpm_dictionary[age][tissue][gene] \
+            #        + gene_to_id_to_tpm_dict
+
+            #for gene in gene_to_id_to_tpm_dict:
+            #    if gene not in age_to_brain_tissue_to_gene_to_tpm_dictionary:
+            #        age_to_brain_tissue_to_gene_to_tpm_dictionary[age][tissue][gene] = []
+
+
+    #print(age_to_brain_tissue_to_gene_to_tpm_dictionary)
 
 
 
