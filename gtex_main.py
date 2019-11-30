@@ -162,16 +162,14 @@ def main():
             for gene in gene_to_id_to_tpm_dict:
                 if gene not in age_to_brain_tissue_to_gene_to_tpm_dictionary:
                     age_to_brain_tissue_to_gene_to_tpm_dictionary[age][tissue][gene] = []
-
+#    print(age_to_brain_tissue_to_gene_to_tpm_dictionary)
 
     for gene in gene_to_id_to_tpm_dict:
         for age in age_to_brain_tissue_to_id_dict:
             for tissue in age_to_brain_tissue_to_id_dict[age]:
                 for sample_id in age_to_brain_tissue_to_id_dict[age][tissue]:
                     if sample_id in gene_to_id_to_tpm_dict[gene]:
-                        age_to_brain_tissue_to_gene_to_tpm_dictionary[age][tissue][gene] = \
-                        age_to_brain_tissue_to_gene_to_tpm_dictionary[age][tissue][gene] + \
-                        gene_to_id_to_tpm_dict[gene][sample_id]
+                        age_to_brain_tissue_to_gene_to_tpm_dictionary[age][tissue][gene].append(gene_to_id_to_tpm_dict[gene][sample_id])
     print(age_to_brain_tissue_to_gene_to_tpm_dictionary)
 
 
