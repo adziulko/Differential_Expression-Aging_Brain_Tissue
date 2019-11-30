@@ -11,7 +11,7 @@ import itertools
 from itertools import islice
 import operator
 
-
+# python gtex_main.py --fnt ID_MIR_WASH_tpm.txt --fnb ID_Brain_Nerve_Tissue.txt --fna GTEx_Analysis_v8_Annotations_SubjectPhenotypesDS.txt --tg 'MIR6859-1' 'WASH7P' --bfn '_testplot.png'
 
 
 def main():
@@ -34,14 +34,13 @@ def main():
                         help='Sample phenotypes (ages) file (txt)',
                         required=True)
 
-    parser.add_argument('--t', '-tissue',
-                        type=str,
-                        help='Input either tissue group (SMTS) or tissue type (SMTSD)',
-                        required=False)
 
-    parser.add_argument('--tg', '-target_gene',
-                        type=str,
-                        help='Input target gene',
+
+
+    # test file uses genes 'MIR6859-1' and 'WASH7P'
+    parser.add_argument('--tg', '-target_genes',
+                        type=str, nargs='*',
+                        help='Input list of target genes',
                         required =False)
 
     parser.add_argument('--bfn', '-boxplot_file_name',
@@ -55,11 +54,7 @@ def main():
     tpm_file_name = args.fnt
     brain_tissue_file_name = args.fnb
     age_file_name = args.fna
-#    group_col_name = args.t
-#    gene_name = args.tg
-#    boxplot_name = args.bfn
 
-#    sample_id_col_name = 'SAMPID'
 
 
 
@@ -143,7 +138,64 @@ def main():
                 set(brain_tissue_to_id_dict[tissue])
     #print(age_to_brain_tissue_to_id_dict)
 
+    #Mock age_to_brain_tissue_to_gene_to_tpm_dictionary:
+#{'60-69': {'Brain - Frontal Cortex (BA9)': {'gene1': [#1, #2, #3], 'Brain - Cortex':
+# 'GTEX-1I1HK-0011-R10b-SM-CJI3M',...},
+    age_to_brain_tissue_to_gene_to_tpm_dictionary = {}
+    for age in age_to_brain_tissue_to_id_dict:
+        if age not in age_to_brain_tissue_to_gene_to_tpm_dictionary:
+            age_to_brain_tissue_to_gene_to_tpm_dictionary[age] = {}
+        for tissue in age_to_brain_tissue_to_id_dict[age]:
+            if tissue not in age_to_brain_tissue_to_gene_to_tpm_dictionary:
+                age_to_brain_tissue_to_gene_to_tpm_dictionary[age][tissue] = {}
+            for gene in gene_to_id_to_tpm_dict:
+                if gene not in age_to_brain_tissue_to_gene_to_tpm_dictionary:
+                    age_to_brain_tissue_to_gene_to_tpm_dictionary[age][tissue][gene] = []
 
+    for gene in gene_to_id_to_tpm_dict:
+        for age in age_to_brain_tissue_to_id_dict:
+            for tissue in age_to_brain_tissue_to_id_dict[age]:
+                for sample_id in age_to_brain_tissue_to_id_dict[age][tissue]:
+                    if sample_id in gene_to_id_to_tpm_dict[gene]:
+                        age_to_brain_tissue_to_gene_to_tpm_dictionary[age][tissue][gene].append(gene_to_id_to_tpm_dict[gene][sample_id])
+    #print(age_to_brain_tissue_to_gene_to_tpm_dictionary)
+
+
+
+
+
+    # Alison's code to make boxplots
+
+    gene_name_list = args.tg  # a list strings
+    boxplot_name_base = args.bfn
+
+    # use gene_name to filter data into appropriate lists for plotting
+
+    # if dictionary goes tissue: gene: age: count can easily loop through all
+    # tissue keys, looking for info from the desired gene, then plot each age bracket info
+
+    # if dictionary goes age: tissue: gene: counts
+    for age in age_to_brain_tissue_to_gene_to_tpm_dictionary:
+        for tissue in age_to_brain_tissue_to_gene_to_tpm_dictionary[age]:
+            boxplot_name = str(tissue) + boxplot_name_base
+            title = age
+            x_axis = tissue
+            y_axis = 'tpms'
+            x_ticks = gene_name_list
+            lists = []
+            for gene in gene_name_list:
+                if gene in age_to_brain_tissue_to_gene_to_tpm_dictionary[age][tissue]:
+                    lists.append(age_to_brain_tissue_to_gene_to_tpm_dictionary[age][tissue][gene])
+
+            box_viz.boxplot(boxplot_name, title, x_axis, y_axis, lists, x_ticks)
+
+
+
+
+
+
+
+    #box_viz.boxplot(boxplot_name, title, x_axis, y_axis, lists, x_ticks)
 
 
 
