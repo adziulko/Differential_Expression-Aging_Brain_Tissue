@@ -127,70 +127,81 @@ def main():
         #print ("key {}, value {} ".format(x, gene_to_tpm_dict[x]))
 
 
-    #Create nested age to brain tissue to id dictionry. result looks like....
-    # = {'60-69': {'Brain - Frontal Cortex (BA9)': {'GTEX-13QIC-0011-R10a-SM-5O9C7',
-    # 'GTEX-1I1HK-0011-R10b-SM-CJI3M',...}, 'Brain - Cortex': {'GTEX-1HBPM-2926-SM-CL54E',
-    # 'GTEX-1I1GR-2926-SM-CNNQG',...}}, '30-39': {'Brain - Frontal Cortex (BA9)':
-    # {'GTEX-16YQH-0011-R10a-SM-AHZMD', ...}}}
-    age_to_brain_tissue_to_id_dict = {}
-    for age in age_to_id_dict:
-        if age not in age_to_brain_tissue_to_id_dict:
-            age_to_brain_tissue_to_id_dict[age] = {}
-        for tissue in brain_tissue_to_id_dict:
-            age_to_brain_tissue_to_id_dict[age][tissue] = set(age_to_id_dict[age]) & \
-                set(brain_tissue_to_id_dict[tissue])
-    #print(age_to_brain_tissue_to_id_dict)
+    # ACL code - rearrange dictionary
+    # create nested brain tissue to age to id dictionary:
+    # = {'Brain - Frontal Cortex (BA9)': {'60-69': {'GTEX-13QIC-0011-R10a-SM-5O9C7', '30-39': {'GTEX-16YQH-0011-R10a-SM-AHZMD', ...}}}
+    brain_tissue_to_age_to_id_dict = {}
+    for tissue in brain_tissue_to_id_dict:
+        if tissue not in brain_tissue_to_age_to_id_dict:
+            brain_tissue_to_age_to_id_dict[tissue] = {}
+        for age in age_to_id_dict:
+            brain_tissue_to_age_to_id_dict[tissue][age] = set(brain_tissue_to_id_dict[tissue]) & \
+                set(age_to_id_dict[age])
+    print(brain_tissue_to_age_to_id_dict)
 
     #Mock age_to_brain_tissue_to_gene_to_tpm_dictionary:
-#{'60-69': {'Brain - Frontal Cortex (BA9)': {'gene1': [#1, #2, #3], 'Brain - Cortex':
-# 'GTEX-1I1HK-0011-R10b-SM-CJI3M',...},
-    age_to_brain_tissue_to_gene_to_tpm_dictionary = {}
-    for age in age_to_brain_tissue_to_id_dict:
-        if age not in age_to_brain_tissue_to_gene_to_tpm_dictionary:
-            age_to_brain_tissue_to_gene_to_tpm_dictionary[age] = {}
-        for tissue in age_to_brain_tissue_to_id_dict[age]:
-            if tissue not in age_to_brain_tissue_to_gene_to_tpm_dictionary:
-                age_to_brain_tissue_to_gene_to_tpm_dictionary[age][tissue] = {}
-            for gene in gene_to_id_to_tpm_dict:
-                if gene not in age_to_brain_tissue_to_gene_to_tpm_dictionary:
-                    age_to_brain_tissue_to_gene_to_tpm_dictionary[age][tissue][gene] = []
+    #{'Brain - Frontal Cortex (BA9)': {'MIR6859-1': {'60-69': [], '50-59': [], '40-49': [], '20-29': [], '30-39': #[], '70-79': []}, 'WASH7P': {'60-69': [], '50-59': [], '40-49': [], '20-29': [], '30-39': [], '70-79': []}} }
+    brain_tissue_to_gene_to_age_to_tpm_dictionary = {}
+    for tissue in brain_tissue_to_age_to_id_dict:
+        if tissue not in brain_tissue_to_gene_to_age_to_tpm_dictionary:
+            brain_tissue_to_gene_to_age_to_tpm_dictionary[tissue] = {}
+        for gene in gene_to_id_to_tpm_dict:
+            if gene not in brain_tissue_to_gene_to_age_to_tpm_dictionary:
+                brain_tissue_to_gene_to_age_to_tpm_dictionary[tissue][gene] = {}
+            for age in brain_tissue_to_age_to_id_dict[tissue]:
+                if age not in brain_tissue_to_gene_to_age_to_tpm_dictionary:
+                    brain_tissue_to_gene_to_age_to_tpm_dictionary[tissue][gene][age] = []
 
     for gene in gene_to_id_to_tpm_dict:
-        for age in age_to_brain_tissue_to_id_dict:
-            for tissue in age_to_brain_tissue_to_id_dict[age]:
-                for sample_id in age_to_brain_tissue_to_id_dict[age][tissue]:
+        for tissue in brain_tissue_to_age_to_id_dict:
+            for age in brain_tissue_to_age_to_id_dict[tissue]:
+                for sample_id in brain_tissue_to_age_to_id_dict[tissue][age]:
                     if sample_id in gene_to_id_to_tpm_dict[gene]:
-                        age_to_brain_tissue_to_gene_to_tpm_dictionary[age][tissue][gene].append(gene_to_id_to_tpm_dict[gene][sample_id])
-    #print(age_to_brain_tissue_to_gene_to_tpm_dictionary)
+                        brain_tissue_to_gene_to_age_to_tpm_dictionary[tissue][gene][age].append(gene_to_id_to_tpm_dict[gene][sample_id])
+    #print(brain_tissue_to_gene_to_age_to_tpm_dictionary)
 
+
+    # attempt to make list with all genes with difference between young and old samples
+
+    # significant_genes = []
+    # young = '20-29'
+    # old = '70-79'
+    # for age in age_to_brain_tissue_to_gene_to_tpm_dictionary:
+    #     if str(age) == young:
+    #
+    #     if str(age) == old:
+    #         print(age)
 
 
 
 
     # Alison's code to make boxplots
 
-    gene_name_list = args.tg  # a list strings
-    boxplot_name_base = args.bfn
+    # gene_name_list = args.tg  # a list strings
+    # boxplot_name_base = args.bfn
 
     # use gene_name to filter data into appropriate lists for plotting
 
     # if dictionary goes tissue: gene: age: count can easily loop through all
     # tissue keys, looking for info from the desired gene, then plot each age bracket info
 
-    # if dictionary goes age: tissue: gene: counts
-    for age in age_to_brain_tissue_to_gene_to_tpm_dictionary:
-        for tissue in age_to_brain_tissue_to_gene_to_tpm_dictionary[age]:
-            boxplot_name = str(tissue) + boxplot_name_base
-            title = age
-            x_axis = tissue
-            y_axis = 'tpms'
-            x_ticks = gene_name_list
-            lists = []
-            for gene in gene_name_list:
-                if gene in age_to_brain_tissue_to_gene_to_tpm_dictionary[age][tissue]:
-                    lists.append(age_to_brain_tissue_to_gene_to_tpm_dictionary[age][tissue][gene])
+    # if dictionary goes tissue:gene:age:counts
+    # for tissue in brain_tissue_to_gene_to_age_to_tpm_dictionary:
+    #     for gene in gene_name_list:
+    #             if gene in brain_tissue_to_gene_to_age_to_tpm_dictionary[tissue]:
+    #             make plot for gene, with multiple boxes side by side for ages
 
-            box_viz.boxplot(boxplot_name, title, x_axis, y_axis, lists, x_ticks)
+    #         boxplot_name = str(tissue) + boxplot_name_base
+    #         title = age
+    #         x_axis = tissue
+    #         y_axis = 'tpms'
+    #         x_ticks = gene_name_list
+    #         lists = []
+    #         for gene in gene_name_list:
+    #             if gene in age_to_brain_tissue_to_gene_to_tpm_dictionary[age][tissue]:
+    #                 lists.append(age_to_brain_tissue_to_gene_to_tpm_dictionary[age][tissue][gene])
+    #
+    #         box_viz.boxplot(boxplot_name, title, x_axis, y_axis, lists, x_ticks)
 
 
 
