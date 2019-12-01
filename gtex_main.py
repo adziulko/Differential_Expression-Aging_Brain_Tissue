@@ -5,13 +5,9 @@ import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pylab as plt
 import argparse
-import box_viz
-import pandas as pd
-import itertools
-from itertools import islice
-import operator
+from matplotlib.backends.backend_pdf import PdfPages
 
-# python gtex_main.py --fnt ID_MIR_WASH_tpm.txt --fnb ID_Brain_Nerve_Tissue.txt --fna GTEx_Analysis_v8_Annotations_SubjectPhenotypesDS.txt --tg 'MIR6859-1' 'WASH7P' --bfn '_testplot.png'
+# python gtex_main.py --fnt ID_MIR_WASH_tpm.txt --fnb ID_Brain_Nerve_Tissue.txt --fna GTEx_Analysis_v8_Annotations_SubjectPhenotypesDS.txt --tg 'MIR6859-1' 'WASH7P' --bfn 'testplots.pdf'
 
 
 def main():
@@ -137,7 +133,7 @@ def main():
         for age in age_to_id_dict:
             brain_tissue_to_age_to_id_dict[tissue][age] = set(brain_tissue_to_id_dict[tissue]) & \
                 set(age_to_id_dict[age])
-    print(brain_tissue_to_age_to_id_dict)
+    #print(brain_tissue_to_age_to_id_dict)
 
     #Mock age_to_brain_tissue_to_gene_to_tpm_dictionary:
     #{'Brain - Frontal Cortex (BA9)': {'MIR6859-1': {'60-69': [], '50-59': [], '40-49': [], '20-29': [], '30-39': #[], '70-79': []}, 'WASH7P': {'60-69': [], '50-59': [], '40-49': [], '20-29': [], '30-39': [], '70-79': []}} }
@@ -177,31 +173,32 @@ def main():
 
     # Alison's code to make boxplots
 
-    # gene_name_list = args.tg  # a list strings
-    # boxplot_name_base = args.bfn
+    gene_name_list = args.tg  # a list strings
+    boxplot_pdf_name = args.bfn
 
-    # use gene_name to filter data into appropriate lists for plotting
+    pp = PdfPages(boxplot_pdf_name)
 
-    # if dictionary goes tissue: gene: age: count can easily loop through all
-    # tissue keys, looking for info from the desired gene, then plot each age bracket info
+    # dictionary goes tissue:gene:age:counts
+    for tissue in brain_tissue_to_gene_to_age_to_tpm_dictionary:
+        fig, axs = plt.subplots(len(gene_name_list), constrained_layout=True)
+        fig.suptitle(tissue)
+        for i in range(len(gene_name_list)):
+            ages = []
+            gene_data_by_age = []
+            if gene_name_list[i] in brain_tissue_to_gene_to_age_to_tpm_dictionary[tissue]:
+                # sort dictionary to get ages in order when graphing
+                for age in sorted(brain_tissue_to_gene_to_age_to_tpm_dictionary[tissue][gene_name_list[i]]):
+                    ages.append(age)
+                    gene_data_by_age.append(brain_tissue_to_gene_to_age_to_tpm_dictionary[tissue][gene_name_list[i]][age])
 
-    # if dictionary goes tissue:gene:age:counts
-    # for tissue in brain_tissue_to_gene_to_age_to_tpm_dictionary:
-    #     for gene in gene_name_list:
-    #             if gene in brain_tissue_to_gene_to_age_to_tpm_dictionary[tissue]:
-    #             make plot for gene, with multiple boxes side by side for ages
+            axs[i].boxplot(gene_data_by_age)
+            axs[i].set_xticklabels(ages)
+            axs[i].set_xlabel(gene_name_list[i])
+            axs[i].set_ylabel('tpms')
 
-    #         boxplot_name = str(tissue) + boxplot_name_base
-    #         title = age
-    #         x_axis = tissue
-    #         y_axis = 'tpms'
-    #         x_ticks = gene_name_list
-    #         lists = []
-    #         for gene in gene_name_list:
-    #             if gene in age_to_brain_tissue_to_gene_to_tpm_dictionary[age][tissue]:
-    #                 lists.append(age_to_brain_tissue_to_gene_to_tpm_dictionary[age][tissue][gene])
-    #
-    #         box_viz.boxplot(boxplot_name, title, x_axis, y_axis, lists, x_ticks)
+        pp.savefig()
+
+    pp.close()
 
 
 
