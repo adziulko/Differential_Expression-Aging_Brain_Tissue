@@ -9,6 +9,9 @@ from matplotlib.backends.backend_pdf import PdfPages
 
 # python gtex_main.py --fnt ID_MIR_WASH_tpm.txt --fnb ID_Brain_Nerve_Tissue.txt --fna GTEx_Analysis_v8_Annotations_SubjectPhenotypesDS.txt --tg 'MIR6859-1' 'WASH7P' --bfn 'testplots.pdf'
 
+# python gtex_main.py --fnt GOI_tpm_file.txt --fnb ID_Brain_Nerve_Tissue.txt --fna GTEx_Analysis_v8_Annotations_SubjectPhenotypesDS.txt --tg 'TREM2' 'CP' 'CYC1' --bfn 'TREM2_CP_CYC1.pdf'
+
+
 
 def main():
     parser = argparse.ArgumentParser(description=
@@ -171,7 +174,7 @@ def main():
 
 
 
-    # Alison's code to make boxplots
+    # Alison's code to make boxplots, save files in a single PDF
 
     gene_name_list = args.tg  # a list strings
     boxplot_pdf_name = args.bfn
@@ -194,7 +197,7 @@ def main():
             axs[i].boxplot(gene_data_by_age)
             axs[i].set_xticklabels(ages)
             axs[i].set_xlabel(gene_name_list[i])
-            axs[i].set_ylabel('tpms')
+            axs[i].set_ylabel('Transcripts per million (TPM)')
 
         pp.savefig()
 
