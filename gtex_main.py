@@ -7,9 +7,8 @@ import matplotlib.pylab as plt
 import argparse
 from matplotlib.backends.backend_pdf import PdfPages
 
-# python gtex_main.py --fnt ID_MIR_WASH_tpm.txt --fnb ID_Brain_Nerve_Tissue.txt --fna GTEx_Analysis_v8_Annotations_SubjectPhenotypesDS.txt --tg 'MIR6859-1' 'WASH7P' --bfn 'testplots.pdf'
 
-# python gtex_main.py --fnt GOI_tpm_file.txt --fnb ID_Brain_Nerve_Tissue.txt --fna GTEx_Analysis_v8_Annotations_SubjectPhenotypesDS.txt --tg 'TREM2' 'CP' 'CYC1' --bfn 'TREM2_CP_CYC1.pdf'
+# python gtex_main.py --fnt GOI_tpm_file.txt --fnb ID_Brain_Nerve_Tissue.txt --fna GTEx_Analysis_v8_Annotations_SubjectPhenotypesDS.txt --tg 'TREM2' 'CP' 'CYC1' --fn 'TREM2_CP_CYC1.pdf'
 
 
 
@@ -42,9 +41,9 @@ def main():
                         help='Input list of target genes',
                         required =False)
 
-    parser.add_argument('--bfn', '-boxplot_file_name',
+    parser.add_argument('--fn', '-pdf_file_name',
                         type=str,
-                        help='Name of output boxplot file',
+                        help='Name of output plot file',
                         required =False)
 
     args = parser.parse_args()
@@ -174,10 +173,10 @@ def main():
 
 
 
-    # Alison's code to make boxplots, save files in a single PDF
+    # Alison's code to make violinplots, save files in a single PDF
 
     gene_name_list = args.tg  # a list strings
-    boxplot_pdf_name = args.bfn
+    boxplot_pdf_name = args.fn
 
     pp = PdfPages(boxplot_pdf_name)
 
@@ -186,7 +185,7 @@ def main():
         fig, axs = plt.subplots(len(gene_name_list), constrained_layout=True)
         fig.suptitle(tissue)
         for i in range(len(gene_name_list)):
-            ages = []
+            ages = ['x']  # adding 'x' to shift the list so violin plots xticks correctly
             gene_data_by_age = []
             if gene_name_list[i] in brain_tissue_to_gene_to_age_to_tpm_dictionary[tissue]:
                 # sort dictionary to get ages in order when graphing
@@ -194,10 +193,10 @@ def main():
                     ages.append(age)
                     gene_data_by_age.append(brain_tissue_to_gene_to_age_to_tpm_dictionary[tissue][gene_name_list[i]][age])
 
-            axs[i].boxplot(gene_data_by_age)
+            axs[i].violinplot(gene_data_by_age, showmedians=True)
             axs[i].set_xticklabels(ages)
             axs[i].set_xlabel(gene_name_list[i])
-            axs[i].set_ylabel('Transcripts per million (TPM)')
+            axs[i].set_ylabel('TPM')
 
         pp.savefig()
 
