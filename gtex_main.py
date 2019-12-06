@@ -8,6 +8,7 @@ import argparse
 from matplotlib.backends.backend_pdf import PdfPages
 
 
+
 # python gtex_main.py --fnt GOI_tpm_file.txt --fnb ID_Brain_Nerve_Tissue.txt --fna GTEx_Analysis_v8_Annotations_SubjectPhenotypesDS.txt --tg 'TREM2' 'CP' 'CYC1' --fn 'TREM2_CP_CYC1.pdf'
 
 
@@ -77,7 +78,7 @@ def main():
         if short not in short_to_long_id_dict:
             short_to_long_id_dict[short] = []
         short_to_long_id_dict[short].append(sample_id)
-    #print(short_to_long_id_dict)
+    #print(brain_tissue_to_id_dict)
 
 
 
@@ -98,7 +99,7 @@ def main():
             if sample_id in short_to_long_id_dict:
                 #print(sample_id)
                 age_to_id_dict[age] = age_to_id_dict[age] + short_to_long_id_dict[sample_id]
-    #print(age_to_id_dict)
+    #print(age_to_id_dict['60-69'])
 
 
     #Create nested gene to sample_id to TPM dictionary. result looks like....
@@ -118,10 +119,10 @@ def main():
         gene_to_id_to_tpm_dict[gene] = {}
         for i in range(2, len(strip)):
             gene_to_id_to_tpm_dict[gene][header[i]] = float(strip[i])
-    #print(gene_to_tpm_dict['MIR6859-1'])
+    #print(gene_to_id_to_tpm_dict['ADAMTS4'])
     #print(header)
-    #for x in list(gene_to_tpm_dict)[0:1]:
-    #    print(gene_to_tpm_dict[x])
+    #for x in list(gene_to_id_to_tpm_dict)[0:1]:
+    #    print(gene_to_id_to_tpm_dict[x])
         #print ("key {}, value {} ".format(x, gene_to_tpm_dict[x]))
 
 
@@ -137,26 +138,28 @@ def main():
                 set(age_to_id_dict[age])
     #print(brain_tissue_to_age_to_id_dict)
 
+
     #Mock age_to_brain_tissue_to_gene_to_tpm_dictionary:
     #{'Brain - Frontal Cortex (BA9)': {'MIR6859-1': {'60-69': [], '50-59': [], '40-49': [], '20-29': [], '30-39': #[], '70-79': []}, 'WASH7P': {'60-69': [], '50-59': [], '40-49': [], '20-29': [], '30-39': [], '70-79': []}} }
     brain_tissue_to_gene_to_age_to_tpm_dictionary = {}
     for tissue in brain_tissue_to_age_to_id_dict:
+        #print(tissue)
         if tissue not in brain_tissue_to_gene_to_age_to_tpm_dictionary:
             brain_tissue_to_gene_to_age_to_tpm_dictionary[tissue] = {}
         for gene in gene_to_id_to_tpm_dict:
+            #print(gene)
             if gene not in brain_tissue_to_gene_to_age_to_tpm_dictionary:
                 brain_tissue_to_gene_to_age_to_tpm_dictionary[tissue][gene] = {}
             for age in brain_tissue_to_age_to_id_dict[tissue]:
+                #print(age)
                 if age not in brain_tissue_to_gene_to_age_to_tpm_dictionary:
                     brain_tissue_to_gene_to_age_to_tpm_dictionary[tissue][gene][age] = []
-
-    for gene in gene_to_id_to_tpm_dict:
-        for tissue in brain_tissue_to_age_to_id_dict:
-            for age in brain_tissue_to_age_to_id_dict[tissue]:
                 for sample_id in brain_tissue_to_age_to_id_dict[tissue][age]:
+                    #print(sample_id)
                     if sample_id in gene_to_id_to_tpm_dict[gene]:
                         brain_tissue_to_gene_to_age_to_tpm_dictionary[tissue][gene][age].append(gene_to_id_to_tpm_dict[gene][sample_id])
     #print(brain_tissue_to_gene_to_age_to_tpm_dictionary)
+
 
 
     # attempt to make list with all genes with difference between young and old samples
