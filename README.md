@@ -1,13 +1,12 @@
 # Differential_Expression-Aging_Brain_Tissue
-Time is the grim-reaper to us all. As we age, our cells accumulate mutations, oxidative damage, and (other examples - general entropy) which  affects our cells to function properly, cascading to tissue and organ damage. Using RNA-seq data from the open source Genome-Tissue Expression project at the Broad Institute, we are interested in measuring differential expression of genes (will find subset for this project) in brain tissues amongst aging individuals.
-(This is just a start, will look over articles for more cohesive abstract)
+Using RNA-seq data from the open source Genome-Tissue Expression project at the Broad Institute, we are interested in measuring differential expression of genes in brain tissues amongst aging individuals.
 ## Getting Started
 
 - A de-identified, open access version of the sample annotations available in dbGaP. We use this file to extract the brain tissue types of individuals. (11M)
 ```
 $ wget https://storage.googleapis.com/gtex_analysis_v8/annotations/GTEx_Analysis_v8_Annotations_SampleAttributesDS.txt
 ```
-- This file was further simplified by extracting the desired tissue types (all brain tissue and nerve tissue). The resulting file (ID_Brain_Nerve_Tissue.txt) is used in the main python code. 
+- The above file was further simplified by extracting the desired tissue types (all brain tissue and nerve tissue). The resulting file (ID_Brain_Nerve_Tissue.txt) is used in the main python code. The result of the below code will be used for --fnb.
 ```
 $ awk '/Brain/ || /Nerve/' GTEx_Analysis_v8_Annotations_SampleAttributesDS.txt | awk -F'\t' '{print $1, $7}' OFS='\t'  > ID_Brain_Nerve_Tissue.txt
 ```
@@ -21,83 +20,33 @@ $ wget https://storage.googleapis.com/gtex_analysis_v8/annotations/GTEx_Analysis
 ```
 $ wget https://storage.googleapis.com/gtex_analysis_v8/rna_seq_data/GTEx_Analysis_2017-06-05_v8_RNASeQCv1.1.9_gene_tpm.gct.gz
 ```
-
-### Prerequisites
-
-What things you need to install the software and how to install them
-
+- The above file was subset. To subset to the genes you want, make a file containing the list of ~56,000 RNA transcripts:
 ```
-Give examples
+awk '{print $2 }' GTEx_Analysis_2017-06-05_v8_RNASeQCv1.1.9_gene_tpm.gct > gene_list.txt
 ```
-
-### Installing
-
-A step by step series of examples that tell you how to get a development env running
-
-Say what the step will be
-
+- With the above list, extract the line number of your desired gene and run the following command in terminal (example for VWF gene):
 ```
-Give the example
+head -32611 GTEx_Analysis_2017-06-05_v8_RNASeQCv1.1.9_gene_tpm.gct | tail -n 1 > VWF_tpm.txt
 ```
-
-And repeat
-
+- Once you have your gene.txt files made, join them together with the following command in terminal:
 ```
-until finished
+awk 1 VWF_tpm.txt MBP_tpm.txt SEMA3a_tpm.txt TREM2_tpm.txt > GOI_tpm_file.txt
+```
+- You can also use GOI_tpm_subset.sh bash script to get started with creating a subset gene list
+
+## File Instruction
+
+To run code to make violin-plot of TPM for each gene in different brain tissue:
+```
+$ python gtex_main.py --fnt GOI_tpm_file_2.txt --fnb ID_Brain_Nerve_Tissue.txt --fna GTEx_Analysis_v8_Annotations_SubjectPhenotypesDS.txt --tg 'TXNIP' 'CP' 'DLGAP1' 'VW' --fn 'TXNIP_CP_DLGAP1_VWF.pdf'
 ```
 
-End with an example of getting some data out of the system or using it for a little demo
+--fnt = RNA Seq gene tmp file (subset version shown above)
 
-## Running the tests
+--fnb = Sample attributes (tissue types) file (simplified version shown above)
 
-Explain how to run the automated tests for this system
+--fna = Sample phenotypes (ages) file (txt)
 
-### Break down into end to end tests
+--tg = Input list of target genes (genes used in plotting. Best visulization at 4 genes)
 
-Explain what these tests test and why
-
-```
-Give an example
-```
-
-### And coding style tests
-
-Explain what these tests test and why
-
-```
-Give an example
-```
-
-## Deployment
-
-Add additional notes about how to deploy this on a live system
-
-## Built With
-
-* [Dropwizard](http://www.dropwizard.io/1.0.2/docs/) - The web framework used
-* [Maven](https://maven.apache.org/) - Dependency Management
-* [ROME](https://rometools.github.io/rome/) - Used to generate RSS Feeds
-
-## Contributing
-
-Please read [CONTRIBUTING.md](https://gist.github.com/PurpleBooth/b24679402957c63ec426) for details on our code of conduct, and the process for submitting pull requests to us.
-
-## Versioning
-
-We use [SemVer](http://semver.org/) for versioning. For the versions available, see the [tags on this repository](https://github.com/your/project/tags).
-
-## Authors
-
-* **Billie Thompson** - *Initial work* - [PurpleBooth](https://github.com/PurpleBooth)
-
-See also the list of [contributors](https://github.com/your/project/contributors) who participated in this project.
-
-## License
-
-This project is licensed under the MIT License - see the [LICENSE.md](LICENSE.md) file for details
-
-## Acknowledgments
-
-* Hat tip to anyone whose code was used
-* Inspiration
-* etc
+--fn = Name of output plot file
