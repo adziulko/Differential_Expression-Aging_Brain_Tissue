@@ -7,6 +7,7 @@ import argparse
 from matplotlib.backends.backend_pdf import PdfPages
 import numpy as np
 import seaborn as sns
+from os import path
 
 
 
@@ -53,9 +54,26 @@ def main():
     tpm_file_name = args.fnt
     brain_tissue_file_name = args.fnb
     age_file_name = args.fna
+    gene_name_list = args.tg  # a list strings
+    boxplot_pdf_name = args.fn
 
 
-
+# Check to make sure all paths exist
+    if path.exists(args.fnt):
+        tpm_file_name = args.fnt
+    else:
+        print("tpm file does not exist. Recheck file in path.")
+        sys.exit(1)
+    if path.exists(args.fnb):
+        brain_tissue_file_name = args.fnb
+    else:
+        print("sample attributes (tissue) file does not exist. Recheck file in path.")
+        sys.exit(1)
+    if path.exists(args.fna):
+        age_file_name = args.fna
+    else:
+        print("phenotype (age) file does not exist. Recheck file in path.")
+        sys.exit(1)
 
 
     #Create brain tissue to id dictionary. result looks like....
@@ -107,6 +125,7 @@ def main():
     #    'gene2': {'id4':TPM, 'id5':TPM, 'id6':TPM}}
     gene_to_id_to_tpm_dict = {}
     header = None
+    tpm_file_gene_list = []
     for line in open(tpm_file_name):
         if header == None:
             header = []
@@ -116,6 +135,7 @@ def main():
         if strip[1] == 'Description':
             continue
         gene = strip[1]
+        tpm_file_gene_list.append(gene)
         gene_to_id_to_tpm_dict[gene] = {}
         for i in range(2, len(strip)):
             gene_to_id_to_tpm_dict[gene][header[i]] = float(strip[i])
@@ -125,6 +145,12 @@ def main():
     #    print(gene_to_id_to_tpm_dict[x])
         #print ("key {}, value {} ".format(x, gene_to_tpm_dict[x]))
 
+    result = all(gene in tpm_file_gene_list for gene in gene_name_list)
+    if result:
+        pass
+    else:
+        print("a gene you specified is not in file")
+        sys.exit(1)
 
     # ACL code - rearrange dictionary
     # create nested brain tissue to age to id dictionary:
@@ -162,14 +188,15 @@ def main():
 
 
 
-
-
-
     # Alison's code to make violinplots, save files in a single PDF
     #Adam update - changed to use seaborn package
 
-    gene_name_list = args.tg  # a list strings
-    boxplot_pdf_name = args.fn
+
+    #for gene in gene_name_list:
+    #    if gene not in tpm_file_name:
+    #        print("nooo.")
+    #        sys.exit(1)
+
 
     pp = PdfPages(boxplot_pdf_name)
 
