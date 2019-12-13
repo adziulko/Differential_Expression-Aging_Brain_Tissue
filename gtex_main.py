@@ -1,4 +1,3 @@
-from collections import defaultdict
 import gzip
 import sys
 import matplotlib
@@ -6,11 +5,12 @@ matplotlib.use('Agg')
 import matplotlib.pylab as plt
 import argparse
 from matplotlib.backends.backend_pdf import PdfPages
+import numpy as np
+import seaborn as sns
 
 
 
 # python gtex_main.py --fnt GOI_tpm_file.txt --fnb ID_Brain_Nerve_Tissue.txt --fna GTEx_Analysis_v8_Annotations_SubjectPhenotypesDS.txt --tg 'TREM2' 'CP' 'CYC1' --fn 'TREM2_CP_CYC1.pdf'
-
 
 
 def main():
@@ -158,25 +158,15 @@ def main():
                     #print(sample_id)
                     if sample_id in gene_to_id_to_tpm_dict[gene]:
                         brain_tissue_to_gene_to_age_to_tpm_dictionary[tissue][gene][age].append(gene_to_id_to_tpm_dict[gene][sample_id])
-    #print(brain_tissue_to_gene_to_age_to_tpm_dictionary)
+    #print(brain_tissue_to_gene_to_age_to_tpm_dictionary.keys())
 
 
-
-    # attempt to make list with all genes with difference between young and old samples
-
-    # significant_genes = []
-    # young = '20-29'
-    # old = '70-79'
-    # for age in age_to_brain_tissue_to_gene_to_tpm_dictionary:
-    #     if str(age) == young:
-    #
-    #     if str(age) == old:
-    #         print(age)
 
 
 
 
     # Alison's code to make violinplots, save files in a single PDF
+    #Adam update - changed to use seaborn package
 
     gene_name_list = args.tg  # a list strings
     boxplot_pdf_name = args.fn
@@ -188,7 +178,7 @@ def main():
         fig, axs = plt.subplots(len(gene_name_list), constrained_layout=True)
         fig.suptitle(tissue)
         for i in range(len(gene_name_list)):
-            ages = ['x']  # adding 'x' to shift the list so violin plots xticks correctly
+            ages = []  # adding 'x' to shift the list so violin plots xticks correctly
             gene_data_by_age = []
             if gene_name_list[i] in brain_tissue_to_gene_to_age_to_tpm_dictionary[tissue]:
                 # sort dictionary to get ages in order when graphing
@@ -196,7 +186,7 @@ def main():
                     ages.append(age)
                     gene_data_by_age.append(brain_tissue_to_gene_to_age_to_tpm_dictionary[tissue][gene_name_list[i]][age])
 
-            axs[i].violinplot(gene_data_by_age, showmedians=True)
+            sns.violinplot(data = gene_data_by_age, ax = axs[i])
             axs[i].set_xticklabels(ages)
             axs[i].set_xlabel(gene_name_list[i])
             axs[i].set_ylabel('TPM')
@@ -204,6 +194,14 @@ def main():
         pp.savefig()
 
     pp.close()
+
+
+
+
+
+
+
+
 
 
 
